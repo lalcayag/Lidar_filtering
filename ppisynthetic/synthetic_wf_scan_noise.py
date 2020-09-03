@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr  3 14:21:05 2019
+Created on Wed Apr  3 14:21:05 2019 by Leonardo Alcayaga
+
+# Perlin noise based on code at:
+# http://webstaff.itn.liu.se/~stegu/simplexnoise/SimplexNoise.java
+
 
 Main (Example) for wind field simulation and reconstruction
 
@@ -140,7 +144,6 @@ def dir_rec_rapid(V_a,V_b,a,b,shape):
 
 # In[Numerical lidar] 
 ####################################################################################################################################    
-## Comment for Konstantinos: This is the one I ended up using, the weighting function from early weights is the one from Alexander Meyer's paper
 ####################################################################################################################################    
 def num_pulsed_lidar(U_in,V_in,vtx,wts,w,c_ref, s_ref, shapes):
     # Translate (x,y) field to lidar origin and transform to polar coordinates
@@ -188,9 +191,6 @@ def num_lidar_rot_del(U_in,V_in,vtx,wts,w,c_ref, s_ref, shapes):
     return np.flip(np.nansum(V_L.reshape(-1,(m-1),V_L.shape[-1]),axis=1),axis=0) 
 
 # In[Interpolation for rotated wind fields]
-####################################################################################################################################
-## Comment for Konstantinos: This is the one I ended up using, the weighting function from early weights is the one from Alexander's paper
-####################################################################################################################################    
 def interpolate(values, vtx, wts, fill_value=np.nan):
     ret = np.einsum('nj,nj->n', np.take(values, vtx), wts)
     ret[np.any(wts < 0, axis=1)] = fill_value
@@ -204,9 +204,7 @@ def interp_weights2(uv, tri, d = 2):
     delta = uv - temp[:, d]
     bary = np.einsum('njk,nk->nj', temp[:, :d, :], delta)
     return vertices, np.hstack((bary, 1 - bary.sum(axis=1, keepdims=True)))
-####################################################################################################################################
-## Comment for Konstantinos: This is the one I ended up using, the weighting function from early weights is the one from Alexander's paper
-####################################################################################################################################
+
 def early_weights_pulsed(r, phi, dl, dir_mean , tri, d, center, n=21, m=51):
     gamma = (2*np.pi-dir_mean) 
     r_unique = np.unique(r)
@@ -249,10 +247,6 @@ def early_weights_pulsed(r, phi, dl, dir_mean , tri, d, center, n=21, m=51):
     shapes = np.array([phi_t_refine.shape[0], phi_t_refine.shape[1], n, m])        
     return (vtx, wts, w, c_ref, s_ref, shapes)
 
-####################################################################################################################################
-## Comment for Konstantinos: This early weights was used for a different tasks and it is not realistic
-####################################################################################################################################
-    
 def early_weights_kernel(r, phi, dir_mean , tri, d, center, n=21, m=51):
     gamma = (2*np.pi-dir_mean) 
     r_unique = np.unique(r)
@@ -291,8 +285,6 @@ def early_weights_kernel(r, phi, dir_mean , tri, d, center, n=21, m=51):
     w = w/norm
     shapes = np.array([phi_t_refine.shape[0], phi_t_refine.shape[1], n, m])        
     return (vtx, wts, w, c_ref, s_ref, shapes)
-
-
 ##################
 # In[Geometry generation]
 # input for numerical lidar
@@ -349,9 +341,6 @@ def win_field_mask_tri(dir_mean,xtrans, ytrans, tri, grid):
    
 # In[Noise generation]
 # Perlin Noise
-####################################################################################################################################
-## Comment for Konstantinos: This is not used in your project
-####################################################################################################################################    
 def perlin_noise(x,y,scale=30, azim_frac = .3, rad_lim = .1, dr_max = .3, period = 256, tot= 'no'):
     
     n, m = x.shape   

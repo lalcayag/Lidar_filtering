@@ -578,16 +578,11 @@ def direct_wf_rec(Lidar0, Lidar1, tri, d, angle = 'azim', r = 'range_gate',v_los
     for i, scan_n in enumerate(scans):
 
         v_los_0 = Lidar0[v_los].loc[Lidar0[scan]==scan_n].values
-        v_los_1 = Lidar1[v_los].loc[Lidar1[scan]==scan_n].values
-        
+        v_los_1 = Lidar1[v_los].loc[Lidar1[scan]==scan_n].values        
         ind0 = ~np.isnan(v_los_0.flatten())
-        ind1 = ~np.isnan(v_los_1.flatten())
-        
+        ind1 = ~np.isnan(v_los_1.flatten())        
         frac0 = np.sum(ind0)/len(v_los_0.flatten())
         frac1 = np.sum(ind1)/len(v_los_1.flatten())
-        
-        print(np.min([frac0,frac1]))
-        
         
         if np.min([frac0,frac1])>.3:
             U = np.zeros((n,m))
@@ -598,141 +593,27 @@ def direct_wf_rec(Lidar0, Lidar1, tri, d, angle = 'azim', r = 'range_gate',v_los
             x_0 = x0.flatten()[ind0]
             y_0 = y0.flatten()[ind0]
             x_1 = x1.flatten()[ind1]
-            y_1 = y1.flatten()[ind1]
-    #        
-    #        plt.figure()
-    #        plt.triplot(tri_t)
-#            print(1)
-#            tri_t0 = Triangulation(x_0,y_0)
-#            maskt = TriAnalyzer(tri_t0).circle_ratios(rescale=False)<.1#get_flat_tri_mask(.05)
-#            maska = areatriangles(tri_t0)> np.mean(areatriangles(tri_t0)) + 2*np.std(areatriangles(tri_t0))
-#            mask0 = maskt | maska
-#            tri_t0.set_mask(mask0)# = Triangulation(tri_t0.x,tri_t0.y,triangles=tri_t0.triangles[~mask0])
-#            
-#            if np.min([frac0,frac1])<.6:
-#                plt.figure()
-#                plt.triplot(tri_t0,color='red')
-#            
-#            pts_in_0 = tri_t0.get_trifinder()(x_i,y_i) !=-1
-#            tri_t0.set_mask(None)
-#            
-#            print(2)
-#            tri_t1 = Triangulation(x_1,y_1)
-#            maskt=TriAnalyzer(tri_t1).circle_ratios(rescale=False)<.1#get_flat_tri_mask(.05) 
-#            maska = areatriangles(tri_t1)> np.mean(areatriangles(tri_t1)) + 2*np.std(areatriangles(tri_t1))
-#            mask1 = maskt | maska
-#            tri_t1.set_mask(mask1)# = Triangulation(tri_t1.x,tri_t1.y,triangles=tri_t1.triangles[~mask1])
-#            
-#            if np.min([frac0,frac1])<.6:
-#                plt.figure()
-#                plt.triplot(tri_t1,color='red')            
-#            
-#            pts_in_1 = tri_t1.get_trifinder()(x_i,y_i) !=-1
-#            tri_t1.set_mask(None)
-                        
-###################################################################################################################            
-                        
+            y_1 = y1.flatten()[ind1]        
             trid1 = Delaunay(np.c_[x_1,y_1])
-            areas1 = areatriangles(trid1, delaunay = True)
-            
+            areas1 = areatriangles(trid1, delaunay = True)           
             maskt = circleratios(trid1)<.05
             maska = areas1> area_lim
-            mask1 = maskt | maska
-            
-            triangle_ind1 = np.arange(0,len(trid1.simplices))
-            
-            indtr1 = np.isin(trid1.find_simplex(np.c_[x_i,y_i]),triangle_ind1[~mask1])
-            
+            mask1 = maskt | maska            
+            triangle_ind1 = np.arange(0,len(trid1.simplices))            
+            indtr1 = np.isin(trid1.find_simplex(np.c_[x_i,y_i]),triangle_ind1[~mask1])            
             v_sq_1[indtr1] = sp.interpolate.griddata(np.c_[x_1,y_1],
-                  v_los_1.flatten()[ind1], (x_i[indtr1],y_i[indtr1]), method='cubic')            
-           
+                  v_los_1.flatten()[ind1], (x_i[indtr1],y_i[indtr1]), method='cubic')                      
             trid0 = Delaunay(np.c_[x_0,y_0])
-            areas0 = areatriangles(trid0, delaunay = True)
-            
+            areas0 = areatriangles(trid0, delaunay = True)            
             maskt = circleratios(trid0)<.05
             maska = areas0> area_lim#np.mean(areas0) + np.std(areas0)
-            mask0 = maskt | maska
-            
-            triangle_ind0 = np.arange(0,len(trid0.simplices))
-            
-            indtr0 = np.isin(trid0.find_simplex(np.c_[x_i,y_i]),triangle_ind0[~mask0])
-            
+            mask0 = maskt | maska            
+            triangle_ind0 = np.arange(0,len(trid0.simplices))            
+            indtr0 = np.isin(trid0.find_simplex(np.c_[x_i,y_i]),triangle_ind0[~mask0])            
             v_sq_0[indtr0] = sp.interpolate.griddata(np.c_[x_0,y_0],
                   v_los_0.flatten()[ind0], (x_i[indtr0],y_i[indtr0]), method='cubic')
-            
-            
-           
-###################################################################################################################            
-    #        tri_t0 = Triangulation(tri_t.x,tri_t.y,triangles=tri_t.triangles[~maskt])
-    #        plt.triplot(tri_t0,color='red')
-    #        
-    #        tri_t1 = Triangulation(tri_t.x,tri_t.y,triangles=tri_t.triangles[~(maskt | maska)])
-              
-    #        tri_t = Triangulation(x_1,y_1)
-    #        plt.figure()
-    #        plt.triplot(tri_t)
-    #    
-    #        maskt=TriAnalyzer(tri_t).circle_ratios(rescale=False)<.1#get_flat_tri_mask(.05)
-    #        
-    #        maska = areatriangles(tri_t)> np.mean(areatriangles(tri_t)) + 2*np.std(areatriangles(tri_t))
-    #        
-    #        tri_t0 = Triangulation(tri_t.x,tri_t.y,triangles=tri_t.triangles[~maskt])
-    #        plt.triplot(tri_t0,color='red')
-    #        
-    #        tri_t1 = Triangulation(tri_t.x,tri_t.y,triangles=tri_t.triangles[~(maskt | maska)])
-    #        plt.triplot(tri_t1,color='green')
-    #        
-    #        plt.figure()
-    #        plt.plot(np.sort(areatriangles(tri_t)))
-    #        plt.plot([1,len(np.sort(areatriangles(tri_t)))],[np.mean(areatriangles(tri_t)) + np.std(areatriangles(tri_t)),np.mean(areatriangles(tri_t)) + np.std(areatriangles(tri_t))])
-    #        plt.plot([1,len(np.sort(areatriangles(tri_t)))],[np.mean(areatriangles(tri_t)) + 2*np.std(areatriangles(tri_t)),np.mean(areatriangles(tri_t)) + 2*np.std(areatriangles(tri_t))])
-            #plt.triplot(tri_t1)
-    #        plt.scatter(x_i[pts_in_1], y_i[pts_in_1])
-            
-    #        plt.figure()
-    #        plt.plot(np.sort(areatriangles(tri_t1)))
-    #        plt.plot([1,len(np.sort(areatriangles(tri_t1)))],[np.mean(areatriangles(tri_t1)) + np.std(areatriangles(tri_t1)),np.mean(areatriangles(tri_t1)) + np.std(areatriangles(tri_t1))])
-    #        plt.plot([1,len(np.sort(areatriangles(tri_t1)))],[np.mean(areatriangles(tri_t1)) + 3*np.std(areatriangles(tri_t1)),np.mean(areatriangles(tri_t1)) + 3*np.std(areatriangles(tri_t1))])
-    #        plt.yscale('log')
-    #        plt.xscale('log')
-            
-            #plt.scatter( np.c_[x_1,y_1][tri_t1.triangles][:,:,0].flatten(),np.c_[x_1,y_1][tri_t1.triangles][:,:,1].flatten(),s=10,color='k')
-            #print(CubicTriInterpolator(tri_t1, v_los_1.flatten()[ind1]))
-#            print(3)
-#            v_sq_1[pts_in_1] = CubicTriInterpolator(tri_t1, v_los_1.flatten()[ind1], kind='geom')(x_i[pts_in_1], y_i[pts_in_1]).data
-#            v_sq_0[pts_in_0] = CubicTriInterpolator(tri_t0, v_los_0.flatten()[ind0], kind='geom')(x_i[pts_in_0], y_i[pts_in_0]).data
-        
-        
-    #        v_sq_0 = sp.interpolate.griddata(np.c_[x_0,y_0],
-    #                        v_los_0.flatten()[ind0], (x_i, y_i), method='cubic')
-    #        
-    #        v_sq_1 = sp.interpolate.griddata(np.c_[x_1,y_1],
-    #                        v_los_1.flatten()[ind1], (x_i, y_i), method='cubic')
-    
-    #    
-#            U[~mask] = v_sq_0
-#            plt.figure()
-#            plt.contourf(grd[0],grd[1],U[:,:],100,cmap='jet')
-#            plt.colorbar()
-    #        
-    #        U[~mask,i] = v_sq_1
-    #        plt.figure()
-    #        plt.contourf(grd[0],grd[1],U[:,:,0],100,cmap='jet')
-    #        plt.colorbar()
-#            
-#            vel_s = np.array([T_i(a,b,np.array([v_lv,v_ls])) for a,b,v_lv,v_ls in
-#                              zip(phi_i_0,phi_i_1,v_sq_0,v_sq_1)])
-    
-    
             u,v = dir_rec_rapid(v_sq_1.flatten(),v_sq_0.flatten(), phi_i_1.flatten(),phi_i_0.flatten())
-                
-            #print(vel_s[:,0].shape,U[~mask,i].shape,v_sq_0.shape)
-            U[~mask] = u#vel_s[:,0]
-            
-#            plt.figure()
-#            plt.contourf(grd[0],grd[1],U,100,cmap='jet')
-#            plt.colorbar()
-            
+            U[~mask] = u            
             V[~mask] = v#vel_s[:,1]      
             U_out.append(U)
             V_out.append(V)
@@ -742,24 +623,6 @@ def direct_wf_rec(Lidar0, Lidar1, tri, d, angle = 'azim', r = 'range_gate',v_los
 # In[]
 
 def areatriangles(tri, delaunay = False):
-    """ integrate scattered data, given a triangulation
-    zsum, areasum = sumtriangles( xy, z, triangles )
-    In:
-        xy: npt, dim data points in 2d, 3d ...
-        z: npt data values at the points, scalars or vectors
-        tri: ntri, dim+1 indices of triangles or simplexes, as from
-                   http://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.Delaunay.html
-    Out:
-        zsum: sum over all triangles of (area * z at midpoint).
-            Thus z at a point where 5 triangles meet
-            enters the sum 5 times, each weighted by that triangle's area / 3.
-        area: the area or volume of the convex hull of the data points.
-            For points over the unit square, zsum outside the hull is 0,
-            so zsum / areasum would compensate for that.
-            Or, make sure that the corners of the square or cube are in xy.
-    """
-    # z concave or convex => under or overestimates
-    #ind = ~np.isnan(z)
     if delaunay:
         xy = tri.points
         triangles = tri.simplices
@@ -769,64 +632,16 @@ def areatriangles(tri, delaunay = False):
         
     npt, dim = xy.shape
     ntri, dim1 = triangles.shape
-    #assert npt == len(z), "shape mismatch: xy %s z %s" % (xy.shape, z.shape)
-    #assert dim1 == dim+1, "triangles ? %s" % triangles.shape
     area = np.zeros( ntri )
-    #areasum = 0
-    dimfac = np.prod( np.arange( 1, dim+1 ))
     for i, tri in enumerate(triangles):
         corners = xy[tri]
         t = corners[1:] - corners[0]
-        if dim == 2:
-            area[i] = abs( t[0,0] * t[1,1] - t[0,1] * t[1,0] ) / 2
-        else:
-            area[i] = abs( np.linalg.det( t )) / dimfac  # v slow
-        #aux = area * np.nanmean(z[tri],axis=0)
-        #if ~np.isnan(aux):
-        #    zsum += aux
-        #    areasum += area
+        area[i] = abs( t[0,0] * t[1,1] - t[0,1] * t[1,0] ) / 2
     return area
 
 # In[]
     
-def circleratios(tri):
-        """
-        Returns a measure of the triangulation triangles flatness.
-
-        The ratio of the incircle radius over the circumcircle radius is a
-        widely used indicator of a triangle flatness.
-        It is always ``<= 0.5`` and ``== 0.5`` only for equilateral
-        triangles. Circle ratios below 0.01 denote very flat triangles.
-
-        To avoid unduly low values due to a difference of scale between the 2
-        axis, the triangular mesh can first be rescaled to fit inside a unit
-        square with :attr:`scale_factors` (Only if *rescale* is True, which is
-        its default value).
-
-        Parameters
-        ----------
-        rescale : boolean, optional
-            If True, a rescaling will be internally performed (based on
-            :attr:`scale_factors`, so that the (unmasked) triangles fit
-            exactly inside a unit square mesh. Default is True.
-
-        Returns
-        -------
-        circle_ratios : masked array
-            Ratio of the incircle radius over the
-            circumcircle radius, for each 'rescaled' triangle of the
-            encapsulated triangulation.
-            Values corresponding to masked triangles are masked out.
-
-        """
-        # Coords rescaling
-#        if rescale:
-#            (kx, ky) = self.scale_factors
-#        else:
-        #(kx, ky) = (1.0, 1.0)
-#        pts = np.vstack([self._triangulation.x*kx,
-#                         self._triangulation.y*ky]).T
-        
+def circleratios(tri):       
         pts = tri.points
         tri_pts = pts[tri.simplices.copy()]
         # Computes the 3 side lengths
@@ -850,326 +665,8 @@ def circleratios(tri):
             circum_radius[~bool_flat] = abc[~bool_flat] / (
                 4.0*np.sqrt(prod[~bool_flat]))
         else:
-            # Normal optimized flow
             circum_radius = (a*b*c) / (4.0*np.sqrt(prod))
         in_radius = (a*b*c) / (4.0*circum_radius*s)
         circle_ratio = in_radius/circum_radius
-        #mask = self._triangulation.mask
-        #if mask is None:
         return circle_ratio
-        #else:
-        #    return np.ma.array(circle_ratio, mask=mask)
 
-
-# In[]
-        
-# In[]
-    
-#def direct_wf_rec(Lidar0, Lidar1, tri, d, angle = 'azim', r = 'range_gate',v_los = 'ws', scan = 'scan', N_grid = 512,interp = True):
-#    """
-#    Function to reconstruct horizontal wind field (2D) in Cartesian coordinates.
-#    
-#    Input:
-#    -----
-#        Lidar_i  - DataFrame with range_gate, azim/elev angle, line-of-sight wind speed, filtered
-#        
-#        tri      - Delaunay triangulation with the unstructured grid of laser beams intersection
-#                   points.
-#        
-#        d        - Linear distance between Lidar_i and Lidar_j.
-#        
-#    Output:
-#    ------
-#        U, V     - Cartesian components of wind speed.
-#    
-#    """
-#    # Grid creation
-#    scans0 = set(np.r_[np.unique(Lidar0[scan].values),np.unique(Lidar0[scan].values)])
-#    scans1 = set(np.r_[np.unique(Lidar1[scan].values),np.unique(Lidar1[scan].values)])
-#    #print(scans1)
-#
-#    if scans0 < scans1:
-#        scans = scans0
-#    elif scans1 < scans0:
-#        scans = scans1
-#    else:
-#        scans = scans1
-#    U_out = []
-#    V_out = []
-#    scan_out = []
-#   
-##    p0 = df_0.azim.unique()
-##    r0 = np.array(df_0.iloc[(df_0.azim==
-##                                   min(p0)).nonzero()[0][0]].range_gate)
-##    
-##    r_g0, p_g0 = np.meshgrid(r0, np.pi-np.radians(p0)) # meshgrid
-##    
-##    r_g_t0, p_g_t0 = translationpolargrid((r_g0, p_g0), d/2)     
-#        
-#
-#    
-##    phi_0 = np.pi-np.radians(np.unique(Lidar0.loc[Lidar0[scan]==min(scans)][angle].values))
-##    phi_1 = np.pi-np.radians(np.unique(Lidar1.loc[Lidar1[scan]==min(scans)][angle].values))
-#    
-#    phi_0 = np.pi-np.radians(Lidar0.loc[Lidar0[scan]==min(scans)][angle].unique())
-#    phi_1 = np.pi-np.radians(Lidar1.loc[Lidar1[scan]==min(scans)][angle].unique())
-#
-#    r_0 = np.unique(Lidar0.loc[Lidar0[scan]==min(scans)][r].values)
-#    r_1 = np.unique(Lidar1.loc[Lidar1[scan]==min(scans)][r].values)
-#
-#    r_g_0, phi_g_0 = np.meshgrid(r_0,phi_0)
-#    r_g_1, phi_g_1 = np.meshgrid(r_1,phi_1)
-#    
-#    
-#    r_t_0, phi_t_0 = translationpolargrid((r_g_0, phi_g_0),d/2)
-#    r_t_1, phi_t_1 = translationpolargrid((r_g_1, phi_g_1),-d/2)
-#    
-##   Area lim
-#    area_lim = np.max(r_0)*np.max(np.diff(phi_0))*np.max(np.diff(r_0))
-#        
-##    fig, ax = plt.subplots()
-##    ax.set_aspect('equal')
-##    ax.use_sticky_edges = False
-##    ax.margins(0.07)
-##    ax.triplot(tri,lw=2,color='grey',alpha=0.5)
-##    im=ax.contourf(r_t_0*np.cos(phi_t_0),r_t_0*np.sin(phi_t_0),Lidar0.ws.loc[Lidar0.scan==1100].values,100,cmap='jet')
-##    fig.colorbar(im)
-##
-##    fig, ax = plt.subplots()
-##    ax.set_aspect('equal')
-##    ax.use_sticky_edges = False
-##    ax.margins(0.07)
-##    ax.triplot(tri,lw=2,color='grey',alpha=0.5)
-##    im=ax.contourf(r_t_1*np.cos(phi_t_1),r_t_1*np.sin(phi_t_1),Lidar1.ws.loc[Lidar1.scan==1100].values,100,cmap='jet')
-##    fig.colorbar(im)
-##    
-##    
-##    fig, ax = plt.subplots()
-##    ax.set_aspect('equal')
-##    ax.use_sticky_edges = False
-##    ax.margins(0.07)
-##    ax.triplot(tri,lw=2,color='grey',alpha=0.5)
-##    im=ax.contourf(r_t_0*np.cos(phi_t_0),r_t_0*np.sin(phi_t_0),phi_g_0*180/np.pi,100,cmap='jet')
-##    fig.colorbar(im)
-##
-##
-##    fig, ax = plt.subplots()
-##    ax.set_aspect('equal')
-##    ax.use_sticky_edges = False
-##    ax.margins(0.07)
-##    ax.triplot(tri,lw=2,color='grey',alpha=0.5)
-##    im=ax.contourf(r_t_1*np.cos(phi_t_1),r_t_1*np.sin(phi_t_1),phi_g_1*180/np.pi,100,cmap='jet')
-##    fig.colorbar(im)
-#
-#    x0 = r_t_0*np.cos(phi_t_0)
-#    y0 = r_t_0*np.sin(phi_t_0)  
-#    x1 = r_t_1*np.cos(phi_t_1)
-#    y1 = r_t_1*np.sin(phi_t_1)
-#
-#    x = np.linspace(np.min(np.r_[x0.flatten(),x1.flatten()]),
-#                    np.max(np.r_[x0.flatten(),x1.flatten()]), N_grid)
-#    y = np.linspace(np.min(np.r_[y0.flatten(),y1.flatten()]),
-#                    np.max(np.r_[y0.flatten(),y1.flatten()]), N_grid)
-#
-#    grd = np.meshgrid(x,y)
-#    
-#    # From Cartesian coord. to polar in global grid
-#    r_tri_s = np.sqrt(grd[0]**2 + grd[1]**2)
-#    phi_tri_s = np.arctan2(grd[1],grd[0])
-#    _, phi_tri_1_s = translationpolargrid((r_tri_s, phi_tri_s),-d/2)
-#    _, phi_tri_0_s = translationpolargrid((r_tri_s, phi_tri_s),d/2)
-#    
-#    # Mask of overlaping domain
-#    
-#    
-#
-#    mask = np.reshape(tri.get_trifinder()(grd[0].flatten(),grd[1].flatten()),
-#                        grd[0].shape) == -1
-#
-#    # Reconstruction function
-#
-##    T_i = lambda a_i,b_i,v_los: np.linalg.solve(np.array([[np.cos(a_i),
-##                                np.sin(a_i)],[np.cos(b_i),np.sin(b_i)]]),v_los)
-#
-#    n, m = grd[0].shape
-#    
-#    print(n,m,len(scans),n*m*len(scans))
-#    
-#    
-#    x_i = grd[0][~mask]
-#    y_i = grd[1][~mask]
-#    
-#    v_sq_0 = x_i*np.nan
-#    v_sq_1 = y_i*np.nan
-#    
-#    r_i = np.sqrt(x_i**2 + y_i**2)
-#    phi_i = np.arctan2(y_i,x_i)
-#
-#    r_i_0, phi_i_0 = translationpolargrid((r_i, phi_i),-d/2)
-#    r_i_1, phi_i_1 = translationpolargrid((r_i, phi_i), d/2)
-#      
-#    
-#    
-#    for i, scan_n in enumerate(scans):
-#        print(i,scan_n)
-#        v_los_0 = Lidar0[v_los].loc[Lidar0[scan]==scan_n].values
-#        v_los_1 = Lidar1[v_los].loc[Lidar1[scan]==scan_n].values
-#        
-#        ind0 = ~np.isnan(v_los_0.flatten())
-#        ind1 = ~np.isnan(v_los_1.flatten())
-#        
-#        frac0 = np.sum(ind0)/len(v_los_0.flatten())
-#        frac1 = np.sum(ind1)/len(v_los_1.flatten())
-#        
-#        #print(np.min([frac0,frac1]))
-#        
-#        
-#        if np.min([frac0,frac1])>.3:
-#            U = np.zeros((n,m))
-#            V = np.zeros((n,m))       
-#            U[mask] = np.nan
-#            V[mask] = np.nan
-#            scan_out.append(scan_n)
-#            x_0 = x0.flatten()[ind0]
-#            y_0 = y0.flatten()[ind0]
-#            x_1 = x1.flatten()[ind1]
-#            y_1 = y1.flatten()[ind1]
-#    #        
-#    #        plt.figure()
-#    #        plt.triplot(tri_t)
-##            print(1)
-##            tri_t0 = Triangulation(x_0,y_0)
-##            maskt = TriAnalyzer(tri_t0).circle_ratios(rescale=False)<.1#get_flat_tri_mask(.05)
-##            maska = areatriangles(tri_t0)> np.mean(areatriangles(tri_t0)) + 2*np.std(areatriangles(tri_t0))
-##            mask0 = maskt | maska
-##            tri_t0.set_mask(mask0)# = Triangulation(tri_t0.x,tri_t0.y,triangles=tri_t0.triangles[~mask0])
-##            
-##            if np.min([frac0,frac1])<.6:
-##                plt.figure()
-##                plt.triplot(tri_t0,color='red')
-##            
-##            pts_in_0 = tri_t0.get_trifinder()(x_i,y_i) !=-1
-##            tri_t0.set_mask(None)
-##            
-##            print(2)
-##            tri_t1 = Triangulation(x_1,y_1)
-##            maskt=TriAnalyzer(tri_t1).circle_ratios(rescale=False)<.1#get_flat_tri_mask(.05) 
-##            maska = areatriangles(tri_t1)> np.mean(areatriangles(tri_t1)) + 2*np.std(areatriangles(tri_t1))
-##            mask1 = maskt | maska
-##            tri_t1.set_mask(mask1)# = Triangulation(tri_t1.x,tri_t1.y,triangles=tri_t1.triangles[~mask1])
-##            
-##            if np.min([frac0,frac1])<.6:
-##                plt.figure()
-##                plt.triplot(tri_t1,color='red')            
-##            
-##            pts_in_1 = tri_t1.get_trifinder()(x_i,y_i) !=-1
-##            tri_t1.set_mask(None)
-#                        
-####################################################################################################################            
-#                        
-#            trid1 = Delaunay(np.c_[x_1,y_1])
-#            areas1 = areatriangles(trid1, delaunay = True)
-#            
-#            maskt = circleratios(trid1)<.05
-#            maska = areas1> area_lim
-#            mask1 = maskt | maska
-#            
-#            triangle_ind1 = np.arange(0,len(trid1.simplices))
-#            
-#            indtr1 = np.isin(trid1.find_simplex(np.c_[x_i,y_i]),triangle_ind1[~mask1])
-#            
-#            v_sq_1[indtr1] = sp.interpolate.griddata(np.c_[x_1,y_1],
-#                  v_los_1.flatten()[ind1], (x_i[indtr1],y_i[indtr1]), method='cubic')            
-#           
-#            trid0 = Delaunay(np.c_[x_0,y_0])
-#            areas0 = areatriangles(trid0, delaunay = True)
-#            
-#            maskt = circleratios(trid0)<.05
-#            maska = areas0> area_lim#np.mean(areas0) + np.std(areas0)
-#            mask0 = maskt | maska
-#            
-#            triangle_ind0 = np.arange(0,len(trid0.simplices))
-#            
-#            indtr0 = np.isin(trid0.find_simplex(np.c_[x_i,y_i]),triangle_ind0[~mask0])
-#            
-#            v_sq_0[indtr0] = sp.interpolate.griddata(np.c_[x_0,y_0],
-#                  v_los_0.flatten()[ind0], (x_i[indtr0],y_i[indtr0]), method='cubic')
-#            
-#            
-#           
-####################################################################################################################            
-#    #        tri_t0 = Triangulation(tri_t.x,tri_t.y,triangles=tri_t.triangles[~maskt])
-#    #        plt.triplot(tri_t0,color='red')
-#    #        
-#    #        tri_t1 = Triangulation(tri_t.x,tri_t.y,triangles=tri_t.triangles[~(maskt | maska)])
-#              
-#    #        tri_t = Triangulation(x_1,y_1)
-#    #        plt.figure()
-#    #        plt.triplot(tri_t)
-#    #    
-#    #        maskt=TriAnalyzer(tri_t).circle_ratios(rescale=False)<.1#get_flat_tri_mask(.05)
-#    #        
-#    #        maska = areatriangles(tri_t)> np.mean(areatriangles(tri_t)) + 2*np.std(areatriangles(tri_t))
-#    #        
-#    #        tri_t0 = Triangulation(tri_t.x,tri_t.y,triangles=tri_t.triangles[~maskt])
-#    #        plt.triplot(tri_t0,color='red')
-#    #        
-#    #        tri_t1 = Triangulation(tri_t.x,tri_t.y,triangles=tri_t.triangles[~(maskt | maska)])
-#    #        plt.triplot(tri_t1,color='green')
-#    #        
-#    #        plt.figure()
-#    #        plt.plot(np.sort(areatriangles(tri_t)))
-#    #        plt.plot([1,len(np.sort(areatriangles(tri_t)))],[np.mean(areatriangles(tri_t)) + np.std(areatriangles(tri_t)),np.mean(areatriangles(tri_t)) + np.std(areatriangles(tri_t))])
-#    #        plt.plot([1,len(np.sort(areatriangles(tri_t)))],[np.mean(areatriangles(tri_t)) + 2*np.std(areatriangles(tri_t)),np.mean(areatriangles(tri_t)) + 2*np.std(areatriangles(tri_t))])
-#            #plt.triplot(tri_t1)
-#    #        plt.scatter(x_i[pts_in_1], y_i[pts_in_1])
-#            
-#    #        plt.figure()
-#    #        plt.plot(np.sort(areatriangles(tri_t1)))
-#    #        plt.plot([1,len(np.sort(areatriangles(tri_t1)))],[np.mean(areatriangles(tri_t1)) + np.std(areatriangles(tri_t1)),np.mean(areatriangles(tri_t1)) + np.std(areatriangles(tri_t1))])
-#    #        plt.plot([1,len(np.sort(areatriangles(tri_t1)))],[np.mean(areatriangles(tri_t1)) + 3*np.std(areatriangles(tri_t1)),np.mean(areatriangles(tri_t1)) + 3*np.std(areatriangles(tri_t1))])
-#    #        plt.yscale('log')
-#    #        plt.xscale('log')
-#            
-#            #plt.scatter( np.c_[x_1,y_1][tri_t1.triangles][:,:,0].flatten(),np.c_[x_1,y_1][tri_t1.triangles][:,:,1].flatten(),s=10,color='k')
-#            #print(CubicTriInterpolator(tri_t1, v_los_1.flatten()[ind1]))
-##            print(3)
-##            v_sq_1[pts_in_1] = CubicTriInterpolator(tri_t1, v_los_1.flatten()[ind1], kind='geom')(x_i[pts_in_1], y_i[pts_in_1]).data
-##            v_sq_0[pts_in_0] = CubicTriInterpolator(tri_t0, v_los_0.flatten()[ind0], kind='geom')(x_i[pts_in_0], y_i[pts_in_0]).data
-#        
-#        
-#    #        v_sq_0 = sp.interpolate.griddata(np.c_[x_0,y_0],
-#    #                        v_los_0.flatten()[ind0], (x_i, y_i), method='cubic')
-#    #        
-#    #        v_sq_1 = sp.interpolate.griddata(np.c_[x_1,y_1],
-#    #                        v_los_1.flatten()[ind1], (x_i, y_i), method='cubic')
-#    
-#    #    
-##            U[~mask] = v_sq_0
-##            plt.figure()
-##            plt.contourf(grd[0],grd[1],U[:,:],100,cmap='jet')
-##            plt.colorbar()
-#    #        
-#    #        U[~mask,i] = v_sq_1
-#    #        plt.figure()
-#    #        plt.contourf(grd[0],grd[1],U[:,:,0],100,cmap='jet')
-#    #        plt.colorbar()
-##            
-##            vel_s = np.array([T_i(a,b,np.array([v_lv,v_ls])) for a,b,v_lv,v_ls in
-##                              zip(phi_i_0,phi_i_1,v_sq_0,v_sq_1)])
-#    
-#    
-#            u,v = dir_rec_rapid(v_sq_1.flatten(),v_sq_0.flatten(), phi_i_1.flatten(),phi_i_0.flatten())
-#                
-#            #print(vel_s[:,0].shape,U[~mask,i].shape,v_sq_0.shape)
-#            U[~mask] = u#vel_s[:,0]
-#            
-##            plt.figure()
-##            plt.contourf(grd[0],grd[1],U,100,cmap='jet')
-##            plt.colorbar()
-#            
-#            V[~mask] = v#vel_s[:,1]      
-#            U_out.append(U)
-#            V_out.append(V)
-#   
-#    return (U_out,V_out,grd,scan_out)
